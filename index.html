@@ -1,0 +1,725 @@
+<!DOCTYPE html>
+<html lang="bn">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>⚡ HackLab — ক্র্যাকিং ডিরেক্টরি</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"/>
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&family=JetBrains+Mono:wght@300;400;500;600;700&display=swap" rel="stylesheet"/>
+<style>
+:root {
+  --black:#030507;--s0:#070b0f;--s1:#0d1318;--s2:#121920;--s3:#1a232c;--s4:#202c38;
+  --b0:rgba(255,255,255,0.035);--b1:rgba(255,255,255,0.07);--b2:rgba(255,255,255,0.12);
+  --red:#e83529;--red-s:#c0281e;--red-d:rgba(232,53,41,0.13);--red-g:rgba(232,53,41,0.30);--red-gs:rgba(232,53,41,0.15);
+  --cyan:#1ecfcf;--cyan-d:rgba(30,207,207,0.09);--amber:#f5a623;--amber-d:rgba(245,166,35,0.10);
+  --t0:#f0f2f5;--t1:#9ba8b8;--t2:#5a6476;--t3:#2e3740;
+  --r-s:7px;--r-m:12px;--r-l:18px;--r-xl:24px;
+  --ease:cubic-bezier(.4,0,.2,1);--tf:.17s var(--ease);--tm:.27s var(--ease);
+  --fu:'Space Grotesk',system-ui,sans-serif;--fm:'JetBrains Mono',monospace;
+  --hh:62px;--sb:260px;--mw:1500px;
+}
+*,*::before,*::after{margin:0;padding:0;box-sizing:border-box;}
+html{scroll-behavior:smooth;}
+body{font-family:var(--fu);background:var(--black);color:var(--t0);min-height:100vh;overflow-x:hidden;line-height:1.55;-webkit-font-smoothing:antialiased;}
+a{text-decoration:none;}
+button{font-family:inherit;cursor:pointer;background:none;border:none;}
+
+::-webkit-scrollbar{width:4px;}
+::-webkit-scrollbar-track{background:var(--s0);}
+::-webkit-scrollbar-thumb{background:var(--red-s);border-radius:2px;}
+::-webkit-scrollbar-thumb:hover{background:var(--red);}
+
+/* BG — all pointer-events:none, low z */
+#bg-grid{position:fixed;inset:0;z-index:0;pointer-events:none;
+  background-image:linear-gradient(var(--b0) 1px,transparent 1px),linear-gradient(90deg,var(--b0) 1px,transparent 1px);
+  background-size:48px 48px;
+  -webkit-mask-image:radial-gradient(ellipse 80% 55% at 50% 0%,black 25%,transparent 75%);
+  mask-image:radial-gradient(ellipse 80% 55% at 50% 0%,black 25%,transparent 75%);}
+#bg-grain{position:fixed;inset:0;z-index:1;pointer-events:none;opacity:.25;
+  background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 400 400' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.82' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+  background-size:180px 180px;mix-blend-mode:overlay;}
+/* NO vignette — it was causing the dark blur on mobile */
+
+/* Progress */
+#progress{position:fixed;top:0;left:0;z-index:9999;height:2px;width:0%;
+  background:linear-gradient(90deg,var(--red),#ff7a5a);box-shadow:0 0 10px var(--red-g);
+  transition:width .08s linear;pointer-events:none;}
+
+/* ═══ HEADER ═══ */
+#header{
+  position:sticky;top:0;z-index:500;
+  height:var(--hh);
+  background:rgba(7,11,15,.95);
+  border-bottom:1px solid var(--b1);
+  display:flex;align-items:center;gap:14px;
+  padding:0 18px;
+  box-shadow:0 4px 24px rgba(0,0,0,.5);
+}
+.logo{display:flex;align-items:center;gap:9px;font-family:var(--fm);font-weight:700;font-size:1.05rem;letter-spacing:.04em;white-space:nowrap;flex-shrink:0;}
+.logo-bolt{width:30px;height:30px;border-radius:7px;flex-shrink:0;background:linear-gradient(135deg,var(--red),#ff6b35);display:grid;place-items:center;font-size:.95rem;box-shadow:0 0 16px var(--red-gs);}
+.logo-name{color:var(--t0);}
+.logo-name em{color:var(--red);font-style:normal;}
+.logo-ver{font-size:.5rem;font-weight:400;color:var(--t2);border:1px solid var(--b1);padding:1px 6px;border-radius:4px;letter-spacing:.05em;align-self:flex-start;margin-top:1px;}
+
+.search-wrap{flex:1;max-width:440px;position:relative;}
+.search-input{width:100%;padding:9px 44px 9px 42px;background:var(--s2);border:1px solid var(--b1);border-radius:40px;color:var(--t0);font-size:.84rem;font-family:var(--fm);outline:none;transition:var(--tf);}
+.search-input:focus{border-color:var(--red);background:var(--s3);box-shadow:0 0 0 3px var(--red-d);}
+.search-input::placeholder{color:var(--t2);font-size:.78rem;}
+.search-icon{position:absolute;left:15px;top:50%;transform:translateY(-50%);color:var(--t2);font-size:.9rem;pointer-events:none;}
+.search-kbd{position:absolute;right:13px;top:50%;transform:translateY(-50%);font-size:.56rem;font-family:var(--fm);color:var(--t2);background:var(--s2);border:1px solid var(--b1);padding:1px 7px;border-radius:4px;pointer-events:none;transition:opacity var(--tf);}
+.search-kbd.hide{opacity:0;}
+.search-clear{position:absolute;right:13px;top:50%;transform:translateY(-50%);width:21px;height:21px;border-radius:50%;background:var(--s3);border:1px solid var(--b1);color:var(--t1);font-size:.62rem;cursor:pointer;display:none;place-items:center;transition:var(--tf);}
+.search-clear.show{display:grid;}
+.search-clear:hover{background:var(--red-d);border-color:var(--red);color:var(--red);}
+
+.hdr-right{display:flex;align-items:center;gap:8px;flex-shrink:0;margin-left:auto;}
+.stat-pill{display:flex;align-items:center;gap:6px;background:var(--s2);border:1px solid var(--b1);border-radius:40px;padding:5px 14px;font-size:.7rem;font-family:var(--fm);color:var(--t1);white-space:nowrap;}
+.stat-pill strong{color:var(--red);}
+.icon-btn{width:36px;height:36px;border-radius:9px;background:var(--s2);border:1px solid var(--b1);color:var(--t1);font-size:1rem;display:grid;place-items:center;cursor:pointer;transition:var(--tf);flex-shrink:0;}
+.icon-btn:hover{border-color:var(--b2);color:var(--t0);background:var(--s3);}
+.mobile-menu-btn{display:none;}
+
+/* ═══ HEROBAR ═══ */
+#herobar{position:relative;z-index:10;background:var(--s0);border-bottom:1px solid var(--b0);padding:12px 18px;display:flex;align-items:center;gap:24px;flex-wrap:wrap;}
+.h-title-block{flex:1;min-width:160px;}
+.h-title{font-family:var(--fm);font-size:.95rem;font-weight:700;background:linear-gradient(90deg,var(--red),#ff7a5a);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;}
+.h-sub{font-size:.68rem;color:var(--t2);margin-top:2px;}
+.h-div{width:1px;height:32px;background:var(--b1);flex-shrink:0;}
+.h-stat{display:flex;flex-direction:column;gap:1px;}
+.h-num{font-size:1.3rem;font-weight:700;font-family:var(--fm);color:var(--red);line-height:1;}
+.h-lbl{font-size:.6rem;font-family:var(--fm);color:var(--t2);text-transform:uppercase;letter-spacing:.08em;}
+
+/* ═══ SHELL ═══ */
+#shell{position:relative;z-index:10;max-width:var(--mw);margin:0 auto;display:flex;min-height:calc(100vh - var(--hh) - 58px);padding:0 18px;}
+
+/* ═══ SIDEBAR (desktop) ═══ */
+#sidebar{
+  width:var(--sb);flex-shrink:0;
+  padding:20px 0 40px;
+  position:sticky;top:var(--hh);
+  height:calc(100vh - var(--hh));
+  overflow-y:auto;scrollbar-width:none;
+  z-index:10;
+}
+#sidebar::-webkit-scrollbar{display:none;}
+.sb-title{font-size:.6rem;font-family:var(--fm);color:var(--t2);text-transform:uppercase;letter-spacing:.1em;padding:0 8px 10px;border-bottom:1px solid var(--b0);margin-bottom:8px;}
+.sb-list{list-style:none;}
+.sb-item{display:flex;align-items:center;gap:7px;padding:7px 9px;border-radius:8px;cursor:pointer;transition:var(--tf);margin-bottom:2px;color:var(--t1);font-size:.75rem;border:1px solid transparent;user-select:none;}
+.sb-item:hover{background:var(--s2);color:var(--t0);}
+.sb-item.on{background:var(--red-d);color:var(--red);border-color:rgba(232,53,41,.22);}
+.sb-icon{font-size:.85rem;flex-shrink:0;line-height:1;}
+.sb-name{flex:1;font-size:.73rem;line-height:1.3;}
+.sb-cnt{font-size:.56rem;font-family:var(--fm);background:var(--s3);border:1px solid var(--b1);padding:1px 7px;border-radius:20px;color:var(--t2);flex-shrink:0;}
+.sb-item.on .sb-cnt{background:var(--red-d);border-color:rgba(232,53,41,.25);color:var(--red);}
+
+/* ═══ MAIN ═══ */
+#main{flex:1;min-width:0;padding:20px 0 32px 20px;border-left:1px solid var(--b0);}
+
+/* Toolbar */
+#toolbar{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:16px;flex-wrap:wrap;}
+.tb-left{display:flex;align-items:center;gap:7px;flex-wrap:wrap;}
+.tb-right{display:flex;align-items:center;gap:7px;}
+.res-label{font-size:.7rem;font-family:var(--fm);color:var(--t2);padding:4px 12px;border-radius:20px;background:var(--s1);border:1px solid var(--b0);}
+.res-label strong{color:var(--cyan);}
+.sort-btn{padding:5px 12px;border-radius:7px;font-size:.68rem;font-family:var(--fm);background:var(--s2);border:1px solid var(--b1);color:var(--t1);cursor:pointer;transition:var(--tf);white-space:nowrap;}
+.sort-btn:hover,.sort-btn.on{background:var(--s3);border-color:var(--b2);color:var(--t0);}
+.expand-btn{padding:6px 14px;border-radius:8px;font-size:.68rem;font-family:var(--fm);background:linear-gradient(135deg,var(--red-s),var(--red));border:none;color:#fff;cursor:pointer;box-shadow:0 2px 12px var(--red-gs);transition:var(--tf);display:flex;align-items:center;gap:5px;}
+.expand-btn:hover{box-shadow:0 4px 20px var(--red-g);transform:translateY(-1px);}
+
+/* Grid */
+#catgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(320px,1fr));gap:14px;}
+
+/* Card */
+.card{background:var(--s1);border:1px solid var(--b0);border-radius:var(--r-l);overflow:hidden;transition:border-color var(--tm),box-shadow var(--tm),transform var(--tm);animation:fadeUp .4s var(--ease) backwards;}
+.card:hover{border-color:rgba(232,53,41,.2);box-shadow:0 0 0 1px rgba(232,53,41,.07),0 8px 28px rgba(0,0,0,.4);transform:translateY(-2px);}
+.card.open{border-color:rgba(232,53,41,.16);}
+.card-hdr{padding:13px 15px;display:flex;align-items:center;justify-content:space-between;cursor:pointer;user-select:none;gap:10px;transition:background var(--tf);position:relative;}
+.card-hdr::after{content:'';position:absolute;bottom:0;left:15px;right:15px;height:1px;background:var(--b0);}
+.card.open .card-hdr::after{background:var(--b1);}
+.card-hdr:hover{background:rgba(255,255,255,.015);}
+.card-left{display:flex;align-items:center;gap:10px;flex:1;min-width:0;}
+.card-ico{width:32px;height:32px;border-radius:8px;flex-shrink:0;background:var(--s3);border:1px solid var(--b1);display:grid;place-items:center;font-size:.9rem;transition:var(--tf);}
+.card:hover .card-ico,.card.open .card-ico{background:var(--red-d);border-color:rgba(232,53,41,.25);}
+.card-name{font-size:.84rem;font-weight:600;color:var(--t0);font-family:var(--fm);letter-spacing:.01em;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.card-right{display:flex;align-items:center;gap:8px;flex-shrink:0;}
+.card-badge{font-size:.56rem;font-family:var(--fm);color:var(--t2);background:var(--s2);border:1px solid var(--b1);padding:2px 9px;border-radius:20px;white-space:nowrap;}
+.chevron{width:18px;height:18px;display:grid;place-items:center;color:var(--t2);transition:transform var(--tm);font-size:.68rem;}
+.card.open .chevron{transform:rotate(180deg);color:var(--red);}
+
+/* Topic expand */
+.topic-wrap{display:grid;grid-template-rows:0fr;transition:grid-template-rows .35s var(--ease);}
+.card.open .topic-wrap{grid-template-rows:1fr;}
+.topic-inner{overflow:hidden;}
+.topic-list{padding:10px 12px 14px;display:flex;flex-direction:column;gap:8px;}
+
+/* Topic item */
+.titem{background:var(--s2);border:1px solid var(--b0);border-radius:var(--r-m);padding:11px 12px 10px;transition:border-color var(--tf),background var(--tf);}
+.titem:hover{border-color:var(--b1);background:var(--s3);}
+.ttop{display:flex;align-items:center;flex-wrap:wrap;gap:5px;margin-bottom:8px;}
+.tlabel{font-size:.81rem;font-weight:500;color:var(--t0);font-family:var(--fm);}
+.ttag{font-size:.46rem;font-family:var(--fm);text-transform:uppercase;letter-spacing:.06em;padding:2px 7px;border-radius:20px;}
+.ttag-r{color:var(--red);background:var(--red-d);border:1px solid rgba(232,53,41,.18);}
+.ttag-c{color:var(--cyan);background:var(--cyan-d);border:1px solid rgba(30,207,207,.18);}
+.ttag-a{color:var(--amber);background:var(--amber-d);border:1px solid rgba(245,166,35,.18);}
+
+/* Action buttons */
+.tactns{display:flex;flex-wrap:wrap;gap:4px;}
+.abtn{display:inline-flex;align-items:center;gap:3px;padding:3px 9px;border-radius:6px;font-size:.58rem;font-weight:500;font-family:var(--fm);border:1px solid;cursor:pointer;transition:var(--tf);text-decoration:none;white-space:nowrap;letter-spacing:.02em;}
+.abtn:hover{transform:translateY(-1px);box-shadow:0 4px 12px rgba(0,0,0,.3);}
+.abtn:active{transform:none;}
+.abtn-ico{font-size:.65rem;}
+.ag{color:#5b8af5;border-color:rgba(91,138,245,.3);background:rgba(91,138,245,.06);}
+.ag:hover{background:#4285f4;color:#fff;border-color:#4285f4;}
+.ay{color:#ff4040;border-color:rgba(255,64,64,.3);background:rgba(255,64,64,.06);}
+.ay:hover{background:#f00;color:#fff;border-color:#f00;}
+.agh{color:#9b7de0;border-color:rgba(155,125,224,.3);background:rgba(155,125,224,.06);}
+.agh:hover{background:#6e40c9;color:#fff;border-color:#6e40c9;}
+.agpt{color:#19c37d;border-color:rgba(25,195,125,.3);background:rgba(25,195,125,.06);}
+.agpt:hover{background:#10a37f;color:#fff;border-color:#10a37f;}
+.agm{color:#a78bfa;border-color:rgba(167,139,250,.3);background:rgba(167,139,250,.06);}
+.agm:hover{background:#7c3aed;color:#fff;border-color:#7c3aed;}
+.acl{color:#e09a5a;border-color:rgba(224,154,90,.3);background:rgba(224,154,90,.06);}
+.acl:hover{background:#d97747;color:#fff;border-color:#d97747;}
+.ads{color:#5da3f7;border-color:rgba(93,163,247,.3);background:rgba(93,163,247,.06);}
+.ads:hover{background:#2563eb;color:#fff;border-color:#2563eb;}
+.apx{color:#fb7185;border-color:rgba(251,113,133,.3);background:rgba(251,113,133,.06);}
+.apx:hover{background:#e11d48;color:#fff;border-color:#e11d48;}
+.abi{color:#40a0e0;border-color:rgba(64,160,224,.3);background:rgba(64,160,224,.06);}
+.abi:hover{background:#0078d4;color:#fff;border-color:#0078d4;}
+
+/* No results */
+.nores{grid-column:1/-1;text-align:center;padding:60px 24px;color:var(--t2);font-family:var(--fm);border:1px dashed var(--b1);border-radius:var(--r-l);background:var(--s1);}
+.nores .ni{font-size:2.5rem;margin-bottom:12px;opacity:.35;}
+.nores strong{color:var(--cyan);}
+.nores p{margin-top:6px;font-size:.74rem;}
+
+/* Toast */
+#toast{position:fixed;bottom:20px;right:20px;z-index:9999;background:var(--s4);border:1px solid var(--b2);border-radius:10px;padding:9px 16px;font-size:.72rem;font-family:var(--fm);color:var(--t0);box-shadow:0 8px 28px rgba(0,0,0,.5);display:flex;align-items:center;gap:7px;opacity:0;transform:translateY(14px);transition:opacity .2s var(--ease),transform .2s var(--ease);pointer-events:none;}
+#toast.show{opacity:1;transform:translateY(0);}
+#toast .t-ico{color:var(--cyan);}
+
+/* Shortcuts modal */
+#shModal{position:fixed;inset:0;z-index:9000;background:rgba(3,5,7,.85);display:grid;place-items:center;opacity:0;pointer-events:none;transition:opacity .2s var(--ease);}
+#shModal.open{opacity:1;pointer-events:all;}
+.sh-box{background:var(--s2);border:1px solid var(--b2);border-radius:var(--r-xl);padding:24px 28px;min-width:320px;max-width:420px;width:90%;box-shadow:0 20px 60px rgba(0,0,0,.6);}
+.sh-title{font-family:var(--fm);font-size:.94rem;font-weight:600;color:var(--t0);margin-bottom:16px;display:flex;align-items:center;justify-content:space-between;}
+.sh-close{width:26px;height:26px;border-radius:6px;background:var(--s3);border:1px solid var(--b1);color:var(--t1);cursor:pointer;font-size:.78rem;display:grid;place-items:center;transition:var(--tf);}
+.sh-close:hover{background:var(--red-d);color:var(--red);border-color:rgba(232,53,41,.3);}
+.sh-row{display:flex;align-items:center;justify-content:space-between;padding:9px 0;border-bottom:1px solid var(--b0);font-size:.74rem;color:var(--t1);}
+.sh-row:last-child{border-bottom:none;}
+.sh-keys{display:flex;gap:4px;}
+.kchip{font-family:var(--fm);font-size:.56rem;font-weight:600;background:var(--s3);border:1px solid var(--b2);border-radius:4px;padding:2px 8px;color:var(--t0);}
+
+/* ═══════════════════════════════════
+   MOBILE SIDEBAR DRAWER
+═══════════════════════════════════ */
+/* Overlay behind drawer */
+#sbOverlay{
+  position:fixed;inset:0;z-index:600;
+  background:rgba(3,5,7,.78);
+  opacity:0;pointer-events:none;
+  transition:opacity .25s var(--ease);
+}
+#sbOverlay.open{opacity:1;pointer-events:all;}
+
+/* Drawer itself */
+@media(max-width:900px){
+  /* hide desktop sidebar */
+  #sidebar{display:none;}
+
+  /* drawer */
+  #drawer{
+    position:fixed;
+    top:0;left:0;bottom:0;
+    width:min(300px,82vw);
+    z-index:700;
+    background:var(--s1);
+    border-right:1px solid var(--b2);
+    display:flex;flex-direction:column;
+    transform:translateX(-100%);
+    transition:transform .28s var(--ease);
+    overflow:hidden;
+  }
+  #drawer.open{transform:translateX(0);}
+
+  /* drawer header bar */
+  .drawer-hdr{
+    display:flex;align-items:center;justify-content:space-between;
+    padding:14px 16px;
+    border-bottom:1px solid var(--b1);
+    background:var(--s2);
+    flex-shrink:0;
+  }
+  .drawer-hdr-title{font-family:var(--fm);font-size:.82rem;font-weight:600;color:var(--t0);}
+  .drawer-close{
+    width:32px;height:32px;border-radius:8px;
+    background:var(--s3);border:1px solid var(--b1);
+    color:var(--t1);font-size:1rem;
+    display:grid;place-items:center;cursor:pointer;
+    transition:var(--tf);
+  }
+  .drawer-close:hover{background:var(--red-d);color:var(--red);border-color:rgba(232,53,41,.3);}
+
+  /* drawer scroll area */
+  .drawer-scroll{flex:1;overflow-y:auto;padding:12px;scrollbar-width:none;}
+  .drawer-scroll::-webkit-scrollbar{display:none;}
+
+  /* layout fixes */
+  #main{border-left:none;padding:16px 0;}
+  #shell{padding:0 14px;}
+  .mobile-menu-btn{display:grid !important;}
+  #catgrid{grid-template-columns:1fr;}
+}
+
+/* Footer */
+#footer{position:relative;z-index:10;text-align:center;padding:18px;border-top:1px solid var(--b0);background:var(--s0);}
+.foot-inner{max-width:540px;margin:0 auto;font-size:.63rem;font-family:var(--fm);color:var(--t2);line-height:1.9;}
+.foot-inner .red{color:var(--red);}
+.foot-tags{display:flex;gap:6px;justify-content:center;flex-wrap:wrap;margin-top:7px;}
+.ftag{padding:2px 10px;border-radius:20px;background:var(--red-d);border:1px solid rgba(232,53,41,.2);color:var(--red);font-size:.56rem;}
+
+mark.hl{background:var(--red-d);color:var(--red);border-radius:3px;padding:0 2px;font-style:normal;}
+
+@keyframes fadeUp{from{opacity:0;transform:translateY(12px);}to{opacity:1;transform:translateY(0);}}
+
+@media(max-width:1100px){:root{--sb:210px;}}
+@media(max-width:768px){
+  #header{padding:0 12px;gap:9px;}
+  .search-wrap{max-width:none;flex:1;}
+  .stat-pill{display:none;}
+  #herobar{padding:10px 14px;gap:14px;}
+  .h-title-block{display:none;}
+  .h-num{font-size:1.1rem;}
+}
+@media(max-width:480px){
+  .logo-ver{display:none;}
+  .h-div{display:none;}
+  .abtn{padding:3px 7px;font-size:.54rem;}
+  #toolbar{flex-direction:column;align-items:flex-start;}
+}
+</style>
+</head>
+<body>
+
+<div id="bg-grid"></div>
+<div id="bg-grain"></div>
+<div id="progress"></div>
+<div id="toast"><span class="t-ico">✓</span><span id="toastMsg"></span></div>
+
+<!-- Shortcuts Modal -->
+<div id="shModal">
+  <div class="sh-box">
+    <div class="sh-title">⌨️ কীবোর্ড শর্টকাট
+      <button class="sh-close" onclick="closeShortcuts()">✕</button>
+    </div>
+    <div class="sh-row"><span>সার্চ ফোকাস</span><div class="sh-keys"><span class="kchip">Ctrl</span><span class="kchip">K</span></div></div>
+    <div class="sh-row"><span>বন্ধ করুন</span><div class="sh-keys"><span class="kchip">Esc</span></div></div>
+    <div class="sh-row"><span>সব খুলুন/বন্ধ</span><div class="sh-keys"><span class="kchip">Ctrl</span><span class="kchip">E</span></div></div>
+    <div class="sh-row"><span>শর্টকাট দেখুন</span><div class="sh-keys"><span class="kchip">?</span></div></div>
+    <div class="sh-row"><span>রিসেট</span><div class="sh-keys"><span class="kchip">Ctrl</span><span class="kchip">R</span></div></div>
+  </div>
+</div>
+
+<!-- Mobile overlay (behind drawer) -->
+<div id="sbOverlay" onclick="closeSidebar()"></div>
+
+<!-- Mobile Drawer (separate from desktop sidebar) -->
+<div id="drawer">
+  <div class="drawer-hdr">
+    <span class="drawer-hdr-title">🗂 ক্যাটাগরি</span>
+    <button class="drawer-close" onclick="closeSidebar()">✕</button>
+  </div>
+  <div class="drawer-scroll">
+    <ul class="sb-list" id="drawerList"></ul>
+  </div>
+</div>
+
+<!-- HEADER -->
+<header id="header">
+  <div class="logo">
+    <div class="logo-bolt">⚡</div>
+    <div class="logo-name">Hack<em>Lab</em> <span class="logo-ver">v5.0</span></div>
+  </div>
+  <div class="search-wrap">
+    <span class="search-icon">⌕</span>
+    <input class="search-input" id="searchInput" type="text"
+           placeholder="টপিক বা ক্যাটাগরি সার্চ করুন…" autocomplete="off" spellcheck="false"/>
+    <button class="search-clear" id="sClear" onclick="clearSearch()">✕</button>
+    <span class="search-kbd" id="sKbd">⌘K</span>
+  </div>
+  <div class="hdr-right">
+    <button class="icon-btn mobile-menu-btn" id="mobileMenuBtn" onclick="openSidebar()" title="ক্যাটাগরি" style="display:none;">☰</button>
+    <div class="stat-pill">📦 <strong id="topicCount">0</strong> টপিক</div>
+    <button class="icon-btn" onclick="openShortcuts()" title="শর্টকাট">⌨</button>
+  </div>
+</header>
+
+<!-- HEROBAR -->
+<div id="herobar">
+  <div class="h-title-block">
+    <div class="h-title">⌨ ক্র্যাকিং &amp; সাইবার সিকিউরিটি ডিরেক্টরি</div>
+    <div class="h-sub">সমস্ত ক্র্যাকিং সাবজেক্ট — এআই-সহায়ক রিসার্চ ও স্টাডি</div>
+  </div>
+  <div class="h-div"></div>
+  <div class="h-stat"><div class="h-num" id="htTotal">0</div><div class="h-lbl">মোট টপিক</div></div>
+  <div class="h-div"></div>
+  <div class="h-stat"><div class="h-num" id="htCats">0</div><div class="h-lbl">ক্যাটাগরি</div></div>
+  <div class="h-div"></div>
+  <div class="h-stat"><div class="h-num">9</div><div class="h-lbl">রিসোর্স/টপিক</div></div>
+</div>
+
+<!-- SHELL -->
+<div id="shell">
+  <!-- Desktop Sidebar -->
+  <aside id="sidebar">
+    <div class="sb-title">ক্যাটাগরি ফিল্টার</div>
+    <ul class="sb-list" id="sbList"></ul>
+  </aside>
+
+  <!-- MAIN -->
+  <main id="main">
+    <div id="toolbar">
+      <div class="tb-left">
+        <div class="res-label" id="resLabel">— <strong id="visCount">0</strong> টপিক</div>
+        <button class="sort-btn on" id="srtD" onclick="setSort('d')">📋 ডিফল্ট</button>
+        <button class="sort-btn" id="srtA" onclick="setSort('a')">🔤 A–Z</button>
+        <button class="sort-btn" id="srtN" onclick="setSort('n')">🔢 সংখ্যা</button>
+      </div>
+      <div class="tb-right">
+        <button class="expand-btn" onclick="toggleAll()">
+          <span id="expIco">▸</span><span id="expLbl">সব খুলুন</span>
+        </button>
+      </div>
+    </div>
+    <div id="catgrid"></div>
+  </main>
+</div>
+
+<!-- FOOTER -->
+<footer id="footer">
+  <div class="foot-inner">
+    <span class="red">⚡</span> HackLab © Humayun Shariar Himu — শুধুমাত্র শিক্ষাগত ও ইথিক্যাল উদ্দেশ্যে
+    <div class="foot-tags">
+      <span class="ftag">#cybersecurity</span>
+      <span class="ftag">#ethical-hacking</span>
+      <span class="ftag">#penetration-testing</span>
+      <span class="ftag">#cracking</span>
+      <span class="ftag">#ctf</span>
+    </div>
+  </div>
+</footer>
+
+<script>
+/* ── DATA ── */
+const CATS = [
+  {id:'password',icon:'⌨️',name:'পাসওয়ার্ড ক্র্যাকিং',topics:[
+    'Brute-Force Attack','Dictionary Attack','Hybrid Attack','Mask Attack',
+    'Rainbow Table Attack','Rule-Based Attack','Credential Stuffing','Password Spraying']},
+  {id:'software',icon:'💾',name:'সফটওয়্যার ক্র্যাকিং',topics:[
+    'Serial/Keygen Cracking','Patch Cracking','Loader Cracking',
+    'Time/Trial Cracking (নাগিং)','Reverse Engineering (Disassembly)','Unpacking']},
+  {id:'network',icon:'📶',name:'নেটওয়ার্ক ও ওয়্যারলেস ক্র্যাকিং',topics:[
+    'Wi-Fi WEP Cracking','Wi-Fi WPA/WPA2 Handshake Capture','PMKID Attack',
+    'De-Authentication Attack (Deauth)','Evil Twin / Rogue AP','WPS PIN Brute-Force']},
+  {id:'webapp',icon:'🌐',name:'ওয়েব অ্যাপ্লিকেশন ক্র্যাকিং',topics:[
+    'Admin Panel Cracking','Session ID Cracking','CAPTCHA Bypass']},
+  {id:'crypto',icon:'🔐',name:'ক্রিপ্টোগ্রাফিক ক্র্যাকিং',topics:[
+    'Hash Collision Attack','Known-Plaintext Attack','Chosen-Plaintext Attack','Side-Channel Attack']},
+  {id:'game',icon:'🎮',name:'গেম ক্র্যাকিং',topics:[
+    'DRM Removal','Anti-Cheat Bypass','In-Game Currency/Item Cracking']},
+  {id:'hardware',icon:'🖥️',name:'হার্ডওয়্যার ও ফার্মওয়্যার ক্র্যাকিং',topics:[
+    'BIOS/UEFI Password Cracking','Router Firmware Cracking','JTAG / ISP Cracking','SIM Card Cracking']},
+  {id:'rfid',icon:'💳',name:'অ্যাক্সেস কন্ট্রোল ও RFID ক্র্যাকিং',topics:[
+    'RFID/NFC Cloning','Mifare Classic Cracking']},
+  {id:'memory',icon:'🧠',name:'মেমোরি ক্র্যাকিং',topics:[
+    'Runtime Memory Editing','Buffer Overflow Exploitation']},
+  {id:'blockchain',icon:'₿',name:'ক্রিপ্টোকারেন্সি ও ব্লকচেইন ক্র্যাকিং',topics:[
+    'Private Key Cracking','Brain Wallet Cracking']},
+  {id:'enterprise',icon:'🏢',name:'এন্টারপ্রাইজ ও AD ক্র্যাকিং',topics:[
+    'Kerberoasting','AS-REP Roasting','Pass-the-Hash (PtH)','Pass-the-Ticket',
+    'Golden Ticket Attack','Silver Ticket Attack','SMB Relay Attack']},
+  {id:'biometric',icon:'👤',name:'বায়োমেট্রিক অথেনটিকেশন ক্র্যাকিং',topics:[
+    'Fingerprint Spoofing','Face ID / IR Bypass','Voice Cloning / Speaker Recognition Bypass',
+    'Shoulder Surfing (ফিজিক্যাল)','Dumpster Diving']},
+  {id:'protocol',icon:'📡',name:'প্রোটোকল ও সেশন হাইজ্যাকিং',topics:[
+    'Replay Attack','SSL/TLS Downgrade Attack','POODLE Attack',
+    'JWT (JSON Web Token) Cracking','OAuth/OpenID Token Hijack']},
+  {id:'mobile',icon:'📱',name:'মোবাইল, IoT ও RF ক্র্যাকিং',topics:[
+    'Jailbreak / Root (ক্র্যাকিং হিসেবে)','BLE (Bluetooth Low Energy) Cracking',
+    'Zigbee / Z-Wave Cracking','Radio Frequency (RF) Rolling Code Cracking']},
+  {id:'crypto_adv',icon:'🧬',name:'ক্রিপ্টোগ্রাফির অ্যাডভান্সড অ্যাটাক',topics:[
+    'Birthday Attack','Length Extension Attack','Meet-in-the-Middle Attack','Timing Attack']},
+  {id:'stego',icon:'🕵️',name:'স্টেগানোগ্রাফি ক্র্যাকিং',topics:[
+    'Image/Audio/Video Steganalysis','NTFS Alternate Data Streams (ADS) Cracking']},
+  {id:'cloud',icon:'☁️',name:'ক্লাউড ও ভার্চুয়ালাইজেশন ক্র্যাকিং',topics:[
+    'Cloud IAM Key Cracking','Container Escape (ক্র্যাকিং)','VM Escape']},
+  {id:'aiml',icon:'🤖',name:'এআই/এমএল মডেল ক্র্যাকিং',topics:[
+    'Model Extraction Attack','Adversarial Input Crafting']},
+  {id:'social',icon:'🎭',name:'সোশ্যাল ইঞ্জিনিয়ারিং-ভিত্তিক ক্র্যাকিং',topics:[
+    'Pretexting','Quid Pro Quo','Watering Hole Attack',
+    'Phishing (ইমেইল/লিংক)','Vishing (ভয়েস ফিশিং)','Smishing (এসএমএস ফিশিং)']},
+  {id:'smartcontract',icon:'⛓️',name:'স্মার্ট কন্ট্র্যাক্ট ক্র্যাকিং',topics:[
+    '51% Attack','Smart Contract Re-entrancy Attack','Nonce Reuse Attack (ক্রিপ্টো)']},
+  {id:'database',icon:'🗄️',name:'ডাটাবেস ক্র্যাকিং',topics:[
+    'SQL Injection','NoSQL Injection','MongoDB Injection',
+    'Database Password Extraction','Stored Procedure Exploitation']},
+  {id:'physicallock',icon:'🔒',name:'ফিজিক্যাল লক ক্র্যাকিং',topics:[
+    'Lock Picking (পিন টাম্বলার)','Bump Key Attack',
+    'Master Key Cracking','Combination Lock Bypass']}
+];
+
+/* ── STATE ── */
+let activeFilter = 'all';
+let sortMode     = 'd';
+let allExpanded  = false;
+let query        = '';
+const openSet    = new Set();
+
+/* ── INIT ── */
+const totalTopics = CATS.reduce((s,c)=>s+c.topics.length,0);
+document.getElementById('htTotal').textContent = totalTopics;
+document.getElementById('htCats').textContent  = CATS.length;
+
+/* ── SIDEBAR ITEM HTML ── */
+function sbItemHtml(id, icon, name, cnt, isOn){
+  return `<li class="sb-item${isOn?' on':''}" data-id="${id}" onclick="setFilter('${id}')">
+    <span class="sb-icon">${icon}</span>
+    <span class="sb-name">${name}</span>
+    <span class="sb-cnt">${cnt}</span>
+  </li>`;
+}
+
+/* ── BUILD SIDEBARS ── */
+function buildSidebars(){
+  let h = sbItemHtml('all','🗂','সব ক্যাটাগরি',CATS.length,true);
+  CATS.forEach(c=>{ h += sbItemHtml(c.id,c.icon,c.name,c.topics.length,false); });
+  document.getElementById('sbList').innerHTML    = h;
+  document.getElementById('drawerList').innerHTML = h;
+}
+
+/* ── UPDATE SIDEBAR ACTIVE STATE ── */
+function updateSidebarActive(){
+  document.querySelectorAll('.sb-item').forEach(el=>{
+    el.classList.toggle('on', el.dataset.id === activeFilter);
+  });
+}
+
+/* ── ACTION BUTTONS ── */
+function buildActions(topic, catName){
+  const q = encodeURIComponent(topic+' '+catName);
+  const t = encodeURIComponent(topic);
+  return `
+    <a class="abtn ag"   href="https://www.google.com/search?q=${q}" target="_blank" rel="noopener"><span class="abtn-ico">🔍</span>Google</a>
+    <a class="abtn ay"   href="https://www.youtube.com/results?search_query=${q}" target="_blank" rel="noopener"><span class="abtn-ico">▶</span>YouTube</a>
+    <a class="abtn agh"  href="https://github.com/search?q=${q}&type=repositories" target="_blank" rel="noopener"><span class="abtn-ico">🐙</span>GitHub</a>
+    <a class="abtn agpt" href="https://chat.openai.com/?q=${t}" target="_blank" rel="noopener"><span class="abtn-ico">🧠</span>ChatGPT</a>
+    <a class="abtn agm"  href="https://gemini.google.com/search?q=${t}" target="_blank" rel="noopener"><span class="abtn-ico">✦</span>Gemini</a>
+    <a class="abtn acl"  href="https://claude.ai/new?q=${t}" target="_blank" rel="noopener"><span class="abtn-ico">🌿</span>Claude</a>
+    <a class="abtn ads"  href="https://chat.deepseek.com/?q=${t}" target="_blank" rel="noopener"><span class="abtn-ico">🧊</span>DeepSeek</a>
+    <a class="abtn apx"  href="https://www.perplexity.ai/search?q=${t}" target="_blank" rel="noopener"><span class="abtn-ico">🌀</span>Perplexity</a>
+    <a class="abtn abi"  href="https://www.bing.com/search?q=${t}&showconv=1" target="_blank" rel="noopener"><span class="abtn-ico">⬡</span>Bing AI</a>`;
+}
+
+/* ── HIGHLIGHT ── */
+function hl(text, q){
+  if(!q) return text;
+  const re = new RegExp(`(${q.replace(/[.*+?^${}()|[\]\\]/g,'\\$&')})`,'gi');
+  return text.replace(re,'<mark class="hl">$1</mark>');
+}
+
+/* ── RENDER ── */
+function render(){
+  const q    = query.trim().toLowerCase();
+  const grid = document.getElementById('catgrid');
+  let visible = 0;
+
+  let cats = (activeFilter === 'all')
+    ? CATS
+    : CATS.filter(c => c.id === activeFilter);
+
+  if(sortMode==='a') cats = [...cats].sort((a,b)=>a.name.localeCompare(b.name,'bn'));
+  if(sortMode==='n') cats = [...cats].sort((a,b)=>b.topics.length-a.topics.length);
+
+  let html = '';
+  cats.forEach((cat, idx)=>{
+    const matched = q
+      ? cat.topics.filter(t => t.toLowerCase().includes(q) || cat.name.toLowerCase().includes(q))
+      : cat.topics;
+
+    if(q && matched.length === 0) return;
+
+    visible += matched.length;
+    const isOpen = openSet.has(cat.id) || q.length>0 || allExpanded;
+    const delay  = (idx%14)*0.025;
+    const tagClasses = ['ttag-r','ttag-c','ttag-a'];
+
+    const topicsHtml = matched.map(t=>{
+      const tc = tagClasses[Math.abs(t.charCodeAt(0))%3];
+      return `<div class="titem">
+        <div class="ttop">
+          <span class="tlabel">${hl(t,query.trim())}</span>
+          <span class="ttag ${tc}">#${cat.id}</span>
+        </div>
+        <div class="tactns">${buildActions(t,cat.name)}</div>
+      </div>`;
+    }).join('');
+
+    html += `<div class="card${isOpen?' open':''}" data-id="${cat.id}" style="animation-delay:${delay}s">
+      <div class="card-hdr" onclick="toggleCard('${cat.id}')">
+        <div class="card-left">
+          <div class="card-ico">${cat.icon}</div>
+          <span class="card-name" title="${cat.name}">${hl(cat.name,query.trim())}</span>
+        </div>
+        <div class="card-right">
+          <span class="card-badge">${matched.length} টপিক</span>
+          <span class="chevron">▾</span>
+        </div>
+      </div>
+      <div class="topic-wrap">
+        <div class="topic-inner">
+          <div class="topic-list">${topicsHtml}</div>
+        </div>
+      </div>
+    </div>`;
+  });
+
+  if(!html){
+    html=`<div class="nores"><div class="ni">🔍</div>
+      <div><strong>"${query}"</strong> — এর সাথে কোনো টপিক মেলেনি।</div>
+      <p>অন্য কীওয়ার্ড দিয়ে চেষ্টা করুন অথবা ফিল্টার পরিবর্তন করুন।</p>
+    </div>`;
+    visible=0;
+  }
+
+  grid.innerHTML = html;
+  document.getElementById('topicCount').textContent = visible;
+  document.getElementById('visCount').textContent   = visible;
+  const label = document.getElementById('resLabel');
+  if(q || activeFilter!=='all'){
+    label.innerHTML = `ফিল্টার ফলাফল — <strong>${visible}</strong> টপিক`;
+  } else {
+    label.innerHTML = `সব ক্যাটাগরি — <strong>${visible}</strong> টপিক`;
+  }
+}
+
+/* ── TOGGLE CARD ── */
+function toggleCard(id){
+  const el = document.querySelector(`.card[data-id="${id}"]`);
+  if(!el) return;
+  el.classList.toggle('open');
+  if(el.classList.contains('open')) openSet.add(id); else openSet.delete(id);
+}
+window.toggleCard=toggleCard;
+
+/* ── TOGGLE ALL ── */
+function toggleAll(){
+  allExpanded=!allExpanded;
+  if(allExpanded){ CATS.forEach(c=>openSet.add(c.id)); toast('সব ক্যাটাগরি খোলা হয়েছে ✓'); }
+  else { openSet.clear(); toast('সব ক্যাটাগরি বন্ধ করা হয়েছে'); }
+  document.getElementById('expIco').textContent = allExpanded?'▾':'▸';
+  document.getElementById('expLbl').textContent = allExpanded?'সব বন্ধ করুন':'সব খুলুন';
+  render();
+}
+window.toggleAll=toggleAll;
+
+/* ── FILTER ── */
+function setFilter(id){
+  activeFilter=id;
+  updateSidebarActive();
+  if(id!=='all') openSet.add(id);
+  render();
+  closeSidebar();
+}
+window.setFilter=setFilter;
+
+/* ── SORT ── */
+function setSort(m){
+  sortMode=m;
+  ['srtD','srtA','srtN'].forEach(id=>document.getElementById(id).classList.remove('on'));
+  document.getElementById({d:'srtD',a:'srtA',n:'srtN'}[m]).classList.add('on');
+  render();
+}
+window.setSort=setSort;
+
+/* ── SEARCH ── */
+const sInput=document.getElementById('searchInput');
+const sClear=document.getElementById('sClear');
+const sKbd  =document.getElementById('sKbd');
+let debTimer=null;
+sInput.addEventListener('input',function(){
+  query=this.value;
+  sClear.classList.toggle('show',this.value.length>0);
+  sKbd.classList.toggle('hide',this.value.length>0);
+  clearTimeout(debTimer);
+  debTimer=setTimeout(render,90);
+});
+function clearSearch(){
+  sInput.value='';query='';
+  sClear.classList.remove('show');sKbd.classList.remove('hide');
+  render();sInput.focus();
+}
+window.clearSearch=clearSearch;
+
+/* ── KEYBOARD ── */
+document.addEventListener('keydown',e=>{
+  const tag=document.activeElement.tagName;
+  const ctrl=e.ctrlKey||e.metaKey;
+  if(ctrl&&e.key==='k'){e.preventDefault();sInput.focus();sInput.select();}
+  if(e.key==='Escape'){sInput.blur();closeShortcuts();closeSidebar();}
+  if(ctrl&&e.key==='e'){e.preventDefault();toggleAll();}
+  if(ctrl&&e.key==='r'&&tag!=='INPUT'){e.preventDefault();clearSearch();setFilter('all');}
+  if(e.key==='?'&&tag!=='INPUT'){openShortcuts();}
+});
+
+/* ── SHORTCUTS ── */
+function openShortcuts(){document.getElementById('shModal').classList.add('open');}
+function closeShortcuts(){document.getElementById('shModal').classList.remove('open');}
+window.openShortcuts=openShortcuts;window.closeShortcuts=closeShortcuts;
+document.getElementById('shModal').addEventListener('click',function(e){if(e.target===this)closeShortcuts();});
+
+/* ── MOBILE SIDEBAR ──
+   Uses a separate #drawer element with its own z-index stack.
+   No backdrop-filter on the overlay so content is never blurred. */
+function openSidebar(){
+  document.getElementById('drawer').classList.add('open');
+  document.getElementById('sbOverlay').classList.add('open');
+  document.body.style.overflow='hidden';
+}
+function closeSidebar(){
+  document.getElementById('drawer').classList.remove('open');
+  document.getElementById('sbOverlay').classList.remove('open');
+  document.body.style.overflow='';
+}
+window.openSidebar=openSidebar;window.closeSidebar=closeSidebar;
+
+/* ── SHOW MOBILE BUTTON WHEN NARROW ── */
+function checkMobile(){
+  const btn=document.getElementById('mobileMenuBtn');
+  btn.style.display=(window.innerWidth<=900)?'grid':'none';
+}
+window.addEventListener('resize',checkMobile);
+checkMobile();
+
+/* ── SCROLL PROGRESS ── */
+window.addEventListener('scroll',()=>{
+  const d=document.documentElement;
+  const p=(d.scrollTop/(d.scrollHeight-d.clientHeight))*100;
+  document.getElementById('progress').style.width=p+'%';
+},{passive:true});
+
+/* ── TOAST ── */
+let tTimer=null;
+function toast(msg){
+  const el=document.getElementById('toast');
+  document.getElementById('toastMsg').textContent=msg;
+  el.classList.add('show');clearTimeout(tTimer);
+  tTimer=setTimeout(()=>el.classList.remove('show'),2200);
+}
+
+/* ── BOOT ── */
+buildSidebars();
+render();
+</script>
+</body>
+</html>
